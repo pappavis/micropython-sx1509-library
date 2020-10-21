@@ -16,11 +16,12 @@ import sx1509
 wemosPinsDict8266 = {"TX":1, "RX":3,"D4":2, "D3":0, "D2":4, "D1":5, "RX":3, "TX":1, "D8":15, "D7":13, "D6":12, "D5":14, "D0":16, "SCL":5, "SDA":4}
 wemosSPI8266 = {"MISO":wemosPinsDict8266["D6"], "MOSI":wemosPinsDict8266["D7"], "SCK":wemosPinsDict8266["D5"], "CSN":wemosPinsDict8266["D4"], "CE":wemosPinsDict8266["D3"]}
 
+print("App START")
 sx1 = sx1509(i2c=i2c1, address=i2cAddr)
 sx1.reset()
 val1 = sx1._read(address=sx1.defs.REG_I_ON_0)
 print("1 val1=",val1)
-
+print("App EIND")
 
 ```
 
