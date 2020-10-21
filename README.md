@@ -27,7 +27,11 @@ print("App EIND")
 
 ```
 
+# Info
+- Original <a href="https://learn.sparkfun.com/tutorials/sx1509-io-expander-breakout-hookup-guide">Sparkfun</a> SX1509 lib.
+- <a href="https://datasheet.octopart.com/SX1509BIULTRT-Semtech-datasheet-12516845.pdf">Datasheet</a> SX1509
+
+
 # CREDITS
 - Micropython lib michiel@easylab4kids.nl
-- <a href="https://learn.sparkfun.com/tutorials/sx1509-io-expander-breakout-hookup-guide">Sparkfun</a> SX1509 lib
 
