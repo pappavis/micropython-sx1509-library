@@ -21,6 +21,8 @@ sx1 = sx1509(i2c=i2c1, address=i2cAddr)
 sx1.reset()
 val1 = sx1._read(address=sx1.defs.REG_I_ON_0)
 print("1 val1=",val1)
+sx1._write(address=sx1.defs.REG_I_ON_0, value=123)
+print("2 val1=",val1)
 print("App EIND")
 
 ```
