@@ -12,18 +12,59 @@ Current status:
 WORK-in-Progress!!
 
 ```python
-import sx1509
-wemosPinsDict8266 = {"TX":1, "RX":3,"D4":2, "D3":0, "D2":4, "D1":5, "RX":3, "TX":1, "D8":15, "D7":13, "D6":12, "D5":14, "D0":16, "SCL":5, "SDA":4}
-wemosSPI8266 = {"MISO":wemosPinsDict8266["D6"], "MOSI":wemosPinsDict8266["D7"], "SCK":wemosPinsDict8266["D5"], "CSN":wemosPinsDict8266["D4"], "CE":wemosPinsDict8266["D3"]}
+def main():
+    global i2cAddr
+    global index1
+    i2cAddr = int(0x3e)
+    pcfAddr = 0x23
+    index1 = 1
+    
+    wemosPinsDict8266 = {"TX":1, "RX":3,"D4":2, "D3":0, "D2":4, "D1":5, "RX":3, "TX":1, "D8":15, "D7":13, "D6":12, "D5":14, "D0":16, "SCL":5, "SDA":4}
+    wemosSPI8266 = {"MISO":wemosPinsDict8266["D6"], "MOSI":wemosPinsDict8266["D7"], "SCK":wemosPinsDict8266["D5"], "CSN":wemosPinsDict8266["D4"], "CE":wemosPinsDict8266["D3"]}
+    
+    i2c1 = machine.I2C(scl=machine.Pin(wemosPinsDict8266["SCL"]),sda=machine.Pin(wemosPinsDict8266["SDA"]),freq=100000)
+    
+    if(i2c1.scan().count(i2cAddr) == 0):
+        print("I2C bord NIET gevonden op", i2cAddr)
+    else:
+        print("SX1509 gevonden op", i2cAddr)
 
-print("App START")
-sx1 = sx1509(i2c=i2c1, address=i2cAddr)
-sx1.reset()
-val1 = sx1._read(address=sx1.defs.REG_I_ON_0)
-print("1 val1=",val1)
-sx1._write(address=sx1.defs.REG_I_ON_0, value=123)
-print("2 val1=",val1)
-print("App EIND")
+    if(i2c1.scan().count(pcfAddr) == 0):
+        print("I2C bord NIET gevonden op", pcfAddr)
+    else:
+        print("PCF8574 gevonden op", pcfAddr)
+
+
+    pcf1 = PCF8574(i2c=i2c1, address=pcfAddr)
+    for tel2 in range(0,10 ):
+        print(tel2, "pcf8574 aan/uit")
+        utime.sleep_ms(50)
+        pcf1.write(2, True)
+        pcf1.write(4, True)
+        utime.sleep_ms(50)
+        pcf1.write(4, False)
+
+    #i2c1.write(b'123')
+    #pca1 = PCA9685(i2c=i2c1, addr=i2cAddr)
+    #pca1.freq(freq=4000)
+    print("Start sx1509")
+    sx1 = SX1509(i2c=i2c1, addr=i2cAddr)
+    
+    for t4 in range(0, 2):
+        #val1=sx1._readWord(addr=t4)
+        val1=sx1.digitalRead(pin=8)
+        print(hex(t4), "val1=",val1)
+    
+    #sx1._write(addr=sx1.defs.RegLED_DRIVER_ENABLE_A, value=0xfa)
+    #print("2 val1=",val1)
+    
+    print("Eind sx1509")
+    
+    #Hallo123naarI2C(i2c1=i2c1)
+
+print("APP start")
+main()
+print("APP eind")
 
 ```
 
