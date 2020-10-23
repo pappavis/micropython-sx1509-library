@@ -12,7 +12,6 @@ Current status:
 WORK-in-Progress!!
 
 ```python
-from pca9685.pca9685 import PCA9685
 import machine
 import utime
 import ustruct
