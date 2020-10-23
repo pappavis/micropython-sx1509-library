@@ -12,6 +12,13 @@ Current status:
 WORK-in-Progress!!
 
 ```python
+from pca9685.pca9685 import PCA9685
+import machine
+import utime
+import ustruct
+from pcf8574 import PCF8574
+import sx1509
+
 def main():
     global i2cAddr
     global index1
