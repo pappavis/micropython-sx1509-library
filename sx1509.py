@@ -1,7 +1,3 @@
-import machine
-import utime
-import ustruct
-
 class sx1590def:
     RegInputDisableB  = 0x00
     RegInputDisableA  = 0x01
@@ -131,19 +127,19 @@ class SX1509:
         pass
 
 
-    def _writePin(self, pin, bHighLow):
-        tempRegDir = int(self._readword(self.defs.RegDirB))
-        print("_writePin. tempRegDir=", tempRegDir)
+    def _writePin(self, pin, highLow):
+        tempRegDir = int(self._readWord(addr=self.defs.RegDirB))
+        #print("_writePin. tempRegDir=", tempRegDir)
 
         if ((0xFFFF^tempRegDir)&(1<<pin)): #output mode
             tempRegData = int(self._readword(self.defs.RegDataB))
 
-        if (highLow):
-            tempRegData |= (1<<pin)
-        else:
-            tempRegData &= ~(1<<pin)
+            if (highLow):
+                tempRegData |= (1<<pin)
+            else:
+                tempRegData &= ~(1<<pin)
             
-        self._writeWord(self.defs.RegDataB, tempRegData);
+            self._writeWord(self.defs.RegDataB, tempRegData);
 
 
     def _writeWord(self, addr, val):
