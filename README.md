@@ -1,6 +1,10 @@
 # micropython-sx1509-library
 Micropython driver for SX1509 16-channel GPIO with LED Driver and Keypad Engine
 
+
+This library does NOT work, not yet.  Clone the repo, and improve please.
+
+
 <img src="https://cdn.sparkfun.com/r/500-500/assets/parts/1/0/9/5/6/13601-01.jpg" width="10%" hieght="10%">
 
 Very early version.
