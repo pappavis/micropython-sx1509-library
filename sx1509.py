@@ -1,3 +1,7 @@
+import machine
+import utime
+import ustruct
+
 class SX1590def:
     RegInputDisableB  = 0x00
     RegInputDisableA  = 0x01
@@ -69,15 +73,18 @@ class SX1509:
         self._i2c.writeto_mem(self._addr, addr, bytearray([val]))
 
 
-    def _ledDriverInit(self, freq=1, log=False):
-        self._write(addr=defs.RegInputDisableB, val=bin(pin))
-        self._write(addr=defs.RegPULL_UP_B, val=0)
-        self._write(addr=defs.RegOPEN_DRAIN_B, val=0)
-        self._write(addr=defs.RegDIR_B, val=0b11111111)
-        self._write(addr=defs.RegCLOCK, val=0b0)
-        self._write(addr=defs.RegLED_DRIVER_ENABLE_B, val=0b11111111)
-        self._write(addr=defs.RegT_ON_8, val=0b11111111)
-        self._write(addr=defs.RegDATA_B, val=0b11111111)
+    def _ledDriverInit(self, pin, freq=1, log=False):
+        tempWord = 0
+        tempByte = bytes(0)
+        
+        tempWord = self._readWord(self.defs.RegInputDisableB)[0]
+        tempWord |= (1<<pin)
+        
+        #Disable pull-up
+        tempWord = self._readWord(self.defs.RegPullUpB)[0]
+        tempWord |= (1<<pin)        
+        self._writeWord(addr=self.defs.RegPullUpB, val=tempWord)
+        
 
 
     def _read(self, addr):
@@ -134,11 +141,11 @@ class SX1509:
 
 
     def _writePin(self, pin, highLow):
-        tempRegDir = int(self._readWord(addr=self.defs.RegDirB))
+        tempRegDir = self._readWord(addr=self.defs.RegDirB)[0]
         #print("_writePin. tempRegDir=", tempRegDir)
 
-        if ((0xFFFF^tempRegDir[0])&(1<<pin)): #output mode
-            tempRegData = int(self._readword(self.defs.RegDataB))
+        if ((0xFFFF^tempRegDir)&(1<<pin)): #output mode
+            tempRegData = self._readWord(self.defs.RegDataB)[0]
 
             if (highLow):
                 tempRegData |= (1<<pin)
@@ -153,29 +160,36 @@ class SX1509:
         msb = bytes(0)
         msb = ((int(val) & 0xFF00) >> 8)
         lsb = (int(val) & 0xFF00)
-        self._i2c.writeto_mem(self._addr, addr, msb)
-        self._i2c.writeto_mem(self._addr, addr, lsb)
+        self._i2c.writeto_mem(self._addr, addr, bytearray(msb))
+        self._i2c.writeto_mem(self._addr, addr, bytearray(lsb))
 
 
     def digitalWrite(self, pin, highLow):
         self._writePin(pin, highLow)
 
 
-    def _pinDir(pin, inOut):
+    def _pinDir(self, pin, inOut):
         modeBit = bytes(0)
 
-        if ((self.defs.inOut == OUTPUT) or (inOut == self.defs.ANALOG_OUTPUT)):
+        if ((inOut == self.defs.OUTPUT) or (inOut == self.defs.ANALOG_OUTPUT)):
             modeBit = False
         else:
             modeBit = True
             
-        tempRegDir = self._read(addr=self.defs.RegDirB)
-        #if (modeBit)    
-        #    tempRegDir |= (1<<pin);
-        #else
-        #    tempRegDir &= ~(1<<pin);
+        tempRegDir = self._readWord(addr=self.defs.RegDirB)[0]
+        if (modeBit):    
+            tempRegDir |= (1<<pin)
+        else:
+            tempRegDir &= ~(1<<pin)
         
-        self._write(REG_DIR_B, tempRegDir)
+        self._writeWord(self.defs.RegDirB, tempRegDir)
+
+        #If INPUT_PULLUP was called, set up the pullup too:
+        if (inOut == self.defs.INPUT_PULLUP):
+            self._writePin(pin, self.defs.HIGH)
+
+        if (inOut == self.defs.ANALOG_OUTPUT):
+            self._ledDriverInit(pin);
 
 
     def pinMode(self, pin, inOut):
