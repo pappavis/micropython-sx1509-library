@@ -85,6 +85,16 @@ class SX1509:
         tempWord |= (1<<pin)        
         self._writeWord(addr=self.defs.RegPullUpB, val=tempWord)
         
+        # Set direction to output (REG_DIR_B)
+        tempWord = self._readWord(self.defs.RegDirB)[0]
+        tempWord &= ~(1<<pin); #0=output  
+        self._writeWord(addr=self.defs.RegDirB, val=tempWord)
+
+        # Enable oscillator (REG_CLOCK)
+        tempByte = self._readByte(self.defs.RegClock)
+        tempByte |= (1<<6) # Internal 2MHz oscillator part 1 (set bit 6)
+        tempByte &= ~(1<<5)    # Internal 2MHz oscillator part 2 (clear bit 5)
+        self._writeByte(self.defs.RegClock, tempByte)
 
 
     def _read(self, addr):
@@ -164,6 +174,10 @@ class SX1509:
         self._i2c.writeto_mem(self._addr, addr, bytearray(lsb))
 
 
+    def _writeByte(self, addr, val):
+        self._i2c.writeto_mem(self._addr, addr, bytearray(val))
+
+
     def digitalWrite(self, pin, highLow):
         self._writePin(pin, highLow)
 
@@ -211,10 +225,8 @@ class SX1509:
 
 
     def _readByte(self, addr):
-        val = bytes(0)
-        
-        self._i2c.write(addr)
-        val = self._i2c.readfrom(addr, 1)
+        val = bytes(0)        
+        val = self._readWord(addr=addr)[0]
         
         return val
 
@@ -240,4 +252,3 @@ class SX1509:
 
     def analogWrite(self, pin, iOn):
         self.pwm(pin, iOn)
-        
