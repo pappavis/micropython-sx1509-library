@@ -1,10 +1,14 @@
-class sx1590def:
+class SX1590def:
     RegInputDisableB  = 0x00
     RegInputDisableA  = 0x01
     RegPullUpB        = 0x06
     RegPullUpA        = 0x07
-    RegOpenDrainB     = 0x0A    
+    RegOpenDrainB     = 0x0A 
+    RegOpenDrainA     = 0x0B
+    RegPolarityB      = 0x0C
+    RegPolarityA      = 0x0D
     RegDirB           = 0x0E
+    RegDirA           = 0x0F
     RegDataB          = 0x10
     RegDataA          = 0x11
     RegInterruptMaskA = 0x13
@@ -26,12 +30,18 @@ class sx1590def:
     RegOFF_15  = 0x66
     
     RegReset   = 0x7D
+    RegTest1   = 0x7E
+    RegTest2   = 0x7F
 
     INTERNAL_CLOCK_2MHZ = 2
     ANALOG_OUTPUT = 0x3
     OUTPUT = 2
+    INPUT_PULLUP = 3
     LedLinear = 0
     LedLogarithmic = 1
+    SLAVE_ADDRESS = 0x3E
+    HIGH = 255
+    LOW  = 0
 
 
     def __init__(self):
@@ -39,7 +49,7 @@ class sx1590def:
 
 
 class SX1509:
-    defs = sx1590def()
+    defs = SX1590def()
     
     def __init__(self, i2c, addr=0x3e):
         print("sx1509 init")
@@ -75,33 +85,29 @@ class SX1509:
         return readMem
 
 
-    def _pindir(self, pin, bInOut):
+    def _pindir(self, pin, inOut):
         modeBit = False;
         
-        if ((bInOut == self.defs.OUTPUT) or (bInOut == self.defs.ANALOG_OUTPUT)):
+        if ((inOut == self.defs.OUTPUT) or (inOut == self.defs.ANALOG_OUTPUT)):
             modeBit = False
         else:
             modeBit = True
 
-        tempRegDir = readWord(addr=self.defs.RegDirB)
-        #if (modeBit)    
-        #    tempRegDir = (1<<pin)
-        #else
-        #    tempRegDir = (1<<pin)
+        tempRegDir = self._readWord(addr=self.defs.RegDirB)[0]
+        if (modeBit):
+            tempRegDir = (1<<pin)
+        else:
+            tempRegDir &= ~(1<<pin)
 
-        self._write(addr=self.defs.RegDirB)
+        self._writeWord(addr=self.defs.RegDirB, val=tempRegDir)
 
         # If INPUT_PULLUP was called, set up the pullup too:
         if (inOut == INPUT_PULLUP):
             self._writePin(pin, HIGH)
         
         if (inOut == ANALOG_OUTPUT):
-            self._ledDriverInit(pin);
+            self._ledDriverInit(pin)
 
-
-    def digitalRead(self, pin):
-        return self._readPin(pin)
-    
 
     def pwm(self, index, on=None, off=None):
         if(on is None or off is None):
@@ -131,7 +137,7 @@ class SX1509:
         tempRegDir = int(self._readWord(addr=self.defs.RegDirB))
         #print("_writePin. tempRegDir=", tempRegDir)
 
-        if ((0xFFFF^tempRegDir)&(1<<pin)): #output mode
+        if ((0xFFFF^tempRegDir[0])&(1<<pin)): #output mode
             tempRegData = int(self._readword(self.defs.RegDataB))
 
             if (highLow):
@@ -147,8 +153,8 @@ class SX1509:
         msb = bytes(0)
         msb = ((int(val) & 0xFF00) >> 8)
         lsb = (int(val) & 0xFF00)
-        self._i2c.writeto(self._addr, msb)
-        self._i2c.writeto(self._addr, lsb)
+        self._i2c.writeto_mem(self._addr, addr, msb)
+        self._i2c.writeto_mem(self._addr, addr, lsb)
 
 
     def digitalWrite(self, pin, highLow):
@@ -172,7 +178,7 @@ class SX1509:
         self._write(REG_DIR_B, tempRegDir)
 
 
-    def _pinMode(self, pin, inOut):
+    def pinMode(self, pin, inOut):
         self._pinDir(pin, inOut);
 
 
@@ -185,7 +191,7 @@ class SX1509:
         
         msb = (rec1[0] & 0x00FF) << 8
         lsb = (rec1[1] & 0x00FF)
-        readValue = msb | lsb
+        readValue = msb , lsb
 
         return readValue;
 
@@ -200,15 +206,24 @@ class SX1509:
 
 
     def _readPin(self, pin):
-        tempRegDir = self._readWord(addr=self.defs.RegDirB)
-        print("readPin. tempRegDir=", tempRegDir)
+        tempRegDir = self._readWord(addr=self.defs.RegDirB)[0]
+        print("readPin:", pin ," tempRegDir=", tempRegDir)
         retV = None
         
         if (tempRegDir & (1<<pin)):  # If the pin is an input
-            tempRegData = self._readWord(addr=self.defs.RegDataB);
+            tempRegData = self._readWord(addr=self.defs.RegDataB)[0]
             if (tempRegData & (1<<pin)):
                 retV = 1
             else:
                 retV = 0
     
         return retV
+
+
+    def digitalRead(self, pin):
+        return self._readPin(pin)
+    
+
+    def analogWrite(self, pin, iOn):
+        self.pwm(pin, iOn)
+        
