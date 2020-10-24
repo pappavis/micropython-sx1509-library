@@ -19,8 +19,6 @@ WORK-in-Progress!!
 import machine
 import utime
 import ustruct
-from pcf8574 import PCF8574
-import sx1509
 
 def main():
     global i2cAddr
@@ -39,34 +37,18 @@ def main():
     else:
         print("SX1509 gevonden op", i2cAddr)
 
-    if(i2c1.scan().count(pcfAddr) == 0):
-        print("I2C bord NIET gevonden op", pcfAddr)
-    else:
-        print("PCF8574 gevonden op", pcfAddr)
 
-
-    pcf1 = PCF8574(i2c=i2c1, address=pcfAddr)
-    for tel2 in range(0,10 ):
-        print(tel2, "pcf8574 aan/uit")
-        utime.sleep_ms(50)
-        pcf1.write(2, True)
-        pcf1.write(4, True)
-        utime.sleep_ms(50)
-        pcf1.write(4, False)
-
-    #i2c1.write(b'123')
-    #pca1 = PCA9685(i2c=i2c1, addr=i2cAddr)
-    #pca1.freq(freq=4000)
-    print("Start sx1509")
-    sx1 = SX1509(i2c=i2c1, addr=i2cAddr)
+    SX1509_LED_PIN = 8
+    io = SX1509(i2c=i2c1, addr=i2cAddr)
     
-    for t4 in range(0, 2):
-        #val1=sx1._readWord(addr=t4)
-        val1=sx1.digitalRead(pin=8)
-        print(hex(t4), "val1=",val1)
+    io.pinMode(pin=8, inOut=io.defs.OUTPUT)
+    io.pinMode(pin=8, inOut=io.defs.INPUT_PULLUP)
     
-    #sx1._write(addr=sx1.defs.RegLED_DRIVER_ENABLE_A, value=0xfa)
-    #print("2 val1=",val1)
+    for cnt1 in range(0,5):
+        io.digitalWrite(SX1509_LED_PIN, io.defs.HIGH)
+        utime.sleep_ms(50)
+        io.digitalWrite(SX1509_LED_PIN, io.defs.LOW)
+        utime.sleep_ms(10)
     
     print("Eind sx1509")
     
