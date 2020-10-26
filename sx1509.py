@@ -1,7 +1,3 @@
-import machine
-import utime
-import ustruct
-
 class SX1590def:
     RegInputDisableB  = 0x00
     RegInputDisableA  = 0x01
@@ -70,7 +66,7 @@ class SX1509:
 
 
     def _write(self, addr, val):
-        self._i2c.writeto_mem(self._addr, addr, bytearray([val]))
+        self._i2c.writeto_mem(self._addr, addr, int(val).to_bytes(1, "little"))
 
 
     def _ledDriverInit(self, pin, freq=1, log=False):
@@ -131,7 +127,7 @@ class SX1509:
             data = self._i2c.readfrom_mem(self.addr, 0x06 + 4 * index, 4)
             return ustruct.unpack('<HH', data)
         data = ustruct.pack('<HH', on, off)
-        self._i2c.writeto_mem(self.addr, 0x06 + 4 * index,  data)
+        self._i2c.writeto_mem(self.addr, 0x06 + 4 * index,  int(val).to_bytes(data, "little"))
 
 
     def debounceEnable(pin):
@@ -170,12 +166,12 @@ class SX1509:
         msb = bytes(0)
         msb = ((int(val) & 0xFF00) >> 8)
         lsb = (int(val) & 0xFF00)
-        self._i2c.writeto_mem(self._addr, addr, bytearray(msb))
-        self._i2c.writeto_mem(self._addr, addr, bytearray(lsb))
+        self._i2c.writeto_mem(self._addr, addr, lsb.to_bytes(1, "little"))
+        self._i2c.writeto_mem(self._addr, addr, msb.to_bytes(1, "little"))
 
 
     def _writeByte(self, addr, val):
-        self._i2c.writeto_mem(self._addr, addr, bytearray(val))
+        self._i2c.writeto_mem(self._addr, addr, val.to_bytes(1, "little"))
 
 
     def digitalWrite(self, pin, highLow):
@@ -214,7 +210,7 @@ class SX1509:
         readValue = None
         msb = 0
         lsb = 0
-        self._i2c.writeto(self._addr, (0).to_bytes(0, "big"))
+        self._i2c.writeto(self._addr, (0).to_bytes(1, "big"))
         rec1 = self._i2c.readfrom_mem(self._addr, addr, 2)
         
         msb = (rec1[0] & 0x00FF) << 8
@@ -252,3 +248,4 @@ class SX1509:
 
     def analogWrite(self, pin, iOn):
         self.pwm(pin, iOn)
+        
