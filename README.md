@@ -11,6 +11,8 @@ Very early version.
 
 Current status:
 - 0.0.1 20201021 It can reset, can read & write a value to pin 0. Thats it!
+- 0.0.2 20201027 Ability to set individual output pins to HIGH.  Note: heavily work-in-progress.
+
 
 ## Voorbeeld gebruik
 WORK-in-Progress!!
