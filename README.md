@@ -39,17 +39,17 @@ def main():
     else:
         print("SX1509 gevonden op", i2cAddr)
 
-
-    SX1509_LED_PIN = 8
     io = SX1509(i2c=i2c1, addr=i2cAddr)
     
-    io.pinMode(pin=8, inOut=io.defs.OUTPUT)
-    io.pinMode(pin=8, inOut=io.defs.INPUT_PULLUP)
-    
-    for cnt1 in range(0,5):
-        io.digitalWrite(SX1509_LED_PIN, io.defs.HIGH)
+    print("Setting pins to OUTPUT")
+    for pinNr in range(1,16):
+        io.pinMode(pinNr, inOut=io.defs.OUTPUT)
+
+    print("Pins aan/uit")
+    for ledPin in range(1,16):
+        io.digitalWrite(ledPin, io.defs.HIGH)
         utime.sleep_ms(50)
-        io.digitalWrite(SX1509_LED_PIN, io.defs.LOW)
+        io.digitalWrite(ledPin, io.defs.LOW)
         utime.sleep_ms(10)
     
     print("Eind sx1509")
