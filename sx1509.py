@@ -1,3 +1,5 @@
+import machine
+
 class SX1590def:
     RegInputDisableB  = 0x00
     RegInputDisableA  = 0x01
@@ -17,18 +19,6 @@ class SX1590def:
     RegLEDDriverEnableB = 0x20
     RegLEDDriverEnableA = 0x21   
 
-    RegTOn0 = 0x29
-    RegIOn0 = 0x2a
-    RegOff0  = 0x2b
-
-    RegTOn8 = 0x49
-    RegIOn8 = 0x4A
-    RegOff8 = 0x4B
-
-    RegT_ON_15 = 0x64
-    RegI_ON_15 = 0x64
-    RegOFF_15  = 0x66
-    
     RegReset   = 0x7D
     RegTest1   = 0x7E
     RegTest2   = 0x7F
@@ -42,11 +32,112 @@ class SX1590def:
     SLAVE_ADDRESS = 0x3E
     HIGH = 255
     LOW  = 0
+    pinRESET = -1
 
 
     def __init__(self):
-        pass
+        self._REG_T_ON_0 = 0x29    #  RegTOn0 ON time register for I/O[0] 0000 0000
+        self._REG_I_ON_0 = 0x2A    #  RegIOn0 ON intensity register for I/O[0] 1111 1111
+        self._REG_OFF_0  = 0x2B    #  RegOff0 OFF time/intensity register for I/O[0] 0000 0000
+        self._REG_T_ON_1 = 0x2C    #  RegTOn1 ON time register for I/O[1] 0000 0000
+        self._REG_I_ON_1 = 0x2D    #  RegIOn1 ON intensity register for I/O[1] 1111 1111
+        self._REG_OFF_1  = 0x2E    #  RegOff1 OFF time/intensity register for I/O[1] 0000 0000
+        self._REG_T_ON_2 = 0x2F    #  RegTOn2 ON time register for I/O[2] 0000 0000
+        self._REG_I_ON_2 = 0x30    #  RegIOn2 ON intensity register for I/O[2] 1111 1111
+        self._REG_OFF_2  = 0x31    #  RegOff2 OFF time/intensity register for I/O[2] 0000 0000
+        self._REG_T_ON_3 = 0x32    #  RegTOn3 ON time register for I/O[3] 0000 0000
+        self._REG_I_ON_3 = 0x33    #  RegIOn3 ON intensity register for I/O[3] 1111 1111
+        self._REG_OFF_3  = 0x34    #  RegOff3 OFF time/intensity register for I/O[3] 0000 0000
+        self._REG_T_ON_4 = 0x35    #  RegTOn4 ON time register for I/O[4] 0000 0000
+        self._REG_I_ON_4 = 0x36    #  RegIOn4 ON intensity register for I/O[4] 1111 1111
+        self._REG_OFF_4  = 0x37    #  RegOff4 OFF time/intensity register for I/O[4] 0000 0000
+        self._REG_T_RISE_4  = 0x38    #  RegTRise4 Fade in register for I/O[4] 0000 0000
+        self._REG_T_FALL_4  = 0x39    #  RegTFall4 Fade out register for I/O[4] 0000 0000
+        self._REG_T_ON_5    = 0x3A    #  RegTOn5 ON time register for I/O[5] 0000 0000
+        self._REG_I_ON_5    = 0x3B    #  RegIOn5 ON intensity register for I/O[5] 1111 1111
+        self._REG_OFF_5     = 0x3C    #  RegOff5 OFF time/intensity register for I/O[5] 0000 0000
+        self._REG_T_RISE_5  = 0x3D    #  RegTRise5 Fade in register for I/O[5] 0000 0000
+        self._REG_T_FALL_5  = 0x3E    #  RegTFall5 Fade out register for I/O[5] 0000 0000
+        self._REG_T_ON_6    = 0x3F    #  RegTOn6 ON time register for I/O[6] 0000 0000
+        self._REG_I_ON_6    = 0x40    #  RegIOn6 ON intensity register for I/O[6] 1111 1111
+        self._REG_OFF_6     = 0x41    #  RegOff6 OFF time/intensity register for I/O[6] 0000 0000
+        self._REG_T_RISE_6  = 0x42    #  RegTRise6 Fade in register for I/O[6] 0000 0000
+        self._REG_T_FALL_6  = 0x43    #  RegTFall6 Fade out register for I/O[6] 0000 0000
+        self._REG_T_ON_7    = 0x44    #  RegTOn7 ON time register for I/O[7] 0000 0000
+        self._REG_I_ON_7    = 0x45    #  RegIOn7 ON intensity register for I/O[7] 1111 1111
+        self._REG_OFF_7     = 0x46    #  RegOff7 OFF time/intensity register for I/O[7] 0000 0000
+        self._REG_T_RISE_7  = 0x47    #  RegTRise7 Fade in register for I/O[7] 0000 0000
+        self._REG_T_FALL_7  = 0x48    #  RegTFall7 Fade out register for I/O[7] 0000 0000
+        self._REG_T_ON_8    = 0x49    #  RegTOn8 ON time register for I/O[8] 0000 0000
+        self._REG_I_ON_8    = 0x4A    #  RegIOn8 ON intensity register for I/O[8] 1111 1111
+        self._REG_OFF_8     = 0x4B    #  RegOff8 OFF time/intensity register for I/O[8] 0000 0000
+        self._REG_T_ON_9    = 0x4C    #  RegTOn9 ON time register for I/O[9] 0000 0000
+        self._REG_I_ON_9    = 0x4D    #  RegIOn9 ON intensity register for I/O[9] 1111 1111
+        self._REG_OFF_9     = 0x4E    #  RegOff9 OFF time/intensity register for I/O[9] 0000 0000
+        self._REG_T_ON_10   = 0x4F    #  RegTOn10 ON time register for I/O[10] 0000 0000
+        self._REG_I_ON_10   = 0x50    #  RegIOn10 ON intensity register for I/O[10] 1111 1111
+        self._REG_OFF_10    = 0x51    #  RegOff10 OFF time/intensity register for I/O[10] 0000 0000
+        self._REG_T_ON_11   = 0x52    #  RegTOn11 ON time register for I/O[11] 0000 0000
+        self._REG_I_ON_11   = 0x53    #  RegIOn11 ON intensity register for I/O[11] 1111 1111
+        self._REG_OFF_11    = 0x54    #  RegOff11 OFF time/intensity register for I/O[11] 0000 0000
+        self._REG_T_ON_12   = 0x55    #  RegTOn12 ON time register for I/O[12] 0000 0000
+        self._REG_I_ON_12   = 0x56    #  RegIOn12 ON intensity register for I/O[12] 1111 1111
+        self._REG_OFF_12    = 0x57    #  RegOff12 OFF time/intensity register for I/O[12] 0000 0000
+        self._REG_T_RISE_12 = 0x58    #  RegTRise12 Fade in register for I/O[12] 0000 0000
+        self._REG_T_FALL_12 = 0x59    #  RegTFall12 Fade out register for I/O[12] 0000 0000
+        self._REG_T_ON_13   = 0x5A    #  RegTOn13 ON time register for I/O[13] 0000 0000
+        self._REG_I_ON_13   = 0x5B    #  RegIOn13 ON intensity register for I/O[13] 1111 1111
+        self._REG_OFF_13    = 0x5C    #  RegOff13 OFF time/intensity register for I/O[13] 0000 0000
+        self._REG_T_RISE_13 = 0x5D    #  RegTRise13 Fade in register for I/O[13] 0000 0000
+        self._REG_T_FALL_13 = 0x5E    #  RegTFall13 Fade out register for I/O[13] 0000 0000
+        self._REG_T_ON_14   = 0x5F    #  RegTOn14 ON time register for I/O[14] 0000 0000
+        self._REG_I_ON_14   = 0x60    #  RegIOn14 ON intensity register for I/O[14] 1111 1111
+        self._REG_OFF_14    = 0x61    #  RegOff14 OFF time/intensity register for I/O[14] 0000 0000
+        self._REG_T_RISE_14 = 0x62    #  RegTRise14 Fade in register for I/O[14] 0000 0000
+        self._REG_T_FALL_14 = 0x63    #  RegTFall14 Fade out register for I/O[14] 0000 0000
+        self._REG_T_ON_15   = 0x64    #  RegTOn15 ON time register for I/O[15] 0000 0000
+        self._REG_I_ON_15   = 0x65    #  RegIOn15 ON intensity register for I/O[15] 1111 1111
+        self._REG_OFF_15    = 0x66    #  RegOff15 OFF time/intensity register for I/O[15] 0000 0000
+        self._REG_T_RISE_15 = 0x67    #  RegTRise15 Fade in register for I/O[15] 0000 0000
+        self._REG_T_FALL_15 = 0x68    #  RegTFall15 Fade out register for I/O[15] 0000 0000
 
+        self.RegIOn = [self._REG_I_ON_0, self._REG_I_ON_1, self._REG_I_ON_2, self._REG_I_ON_3,
+                            self._REG_I_ON_4, self._REG_I_ON_5, self._REG_I_ON_6, self._REG_I_ON_7,
+                            self._REG_I_ON_8, self._REG_I_ON_9, self._REG_I_ON_10, self._REG_I_ON_11,
+                            self._REG_I_ON_12, self._REG_I_ON_13, self._REG_I_ON_14, self._REG_I_ON_15]
+
+        self.RegTOn = [self._REG_T_ON_0, self._REG_T_ON_1, self._REG_T_ON_2, self._REG_T_ON_3,
+                            self._REG_T_ON_4, self._REG_T_ON_5, self._REG_T_ON_6, self._REG_T_ON_7,
+                            self._REG_T_ON_8, self._REG_T_ON_9, self._REG_T_ON_10, self._REG_T_ON_11,
+                            self._REG_T_ON_12, self._REG_T_ON_13, self._REG_T_ON_14, self._REG_T_ON_15]
+
+
+        self.RegOff = [self._REG_OFF_0, self._REG_OFF_1, self._REG_OFF_2, self._REG_OFF_3,
+                            self._REG_OFF_4, self._REG_OFF_5, self._REG_OFF_6, self._REG_OFF_7,
+                            self._REG_OFF_8, self._REG_OFF_9, self._REG_OFF_10, self._REG_OFF_11,
+                            self._REG_OFF_12, self._REG_OFF_13, self._REG_OFF_14, self._REG_OFF_15]
+
+
+        self.RegTRise = [0xFF, 0xFF, 0xFF, 0xFF,
+                        self._REG_T_RISE_4, self._REG_T_RISE_5, self._REG_T_RISE_6, self._REG_T_RISE_7,
+                        0xFF, 0xFF, 0xFF, 0xFF,
+                        self._REG_T_RISE_12, self._REG_T_RISE_13, self._REG_T_RISE_14, self._REG_T_RISE_15]
+
+
+        self.RegTFall = [0xFF, 0xFF, 0xFF, 0xFF,
+                        self._REG_T_FALL_4, self._REG_T_FALL_5, self._REG_T_FALL_6, self._REG_T_FALL_7,
+                        0xFF, 0xFF, 0xFF, 0xFF,
+                        self._REG_T_FALL_12, self._REG_T_FALL_13, self._REG_T_FALL_14, self._REG_T_FALL_15]
+
+
+    def getRegIonAddr(self, pin):
+        addr = self.RegIOn0
+        
+        if(pin <= 4):
+            addr = self.RegIOn0 + (3 * pin) #RegIOn0 tot RegIOn4
+        elif (pin > 4):
+            pin -= 5   # begin weer bij base getal 1.
+            addr = 0x3B + (5 * pin) #RegIOn5
 
 class SX1509:
     defs = SX1590def()
@@ -122,7 +213,14 @@ class SX1509:
             self._ledDriverInit(pin)
 
 
-    def pwm(self, index, on=None, off=None):
+    def pwm(self, pin, iOn):
+        '''Write the on intensity of pin
+        Linear mode: Ion = iOn
+        Log mode: Ion = f(iOn)'''
+        self._writeByte(self.defs.RegIOn[pin], iOn)
+
+
+    def __pwm__nietgebruiken(self, index, on=None, off=None):
         if(on is None or off is None):
             data = self._i2c.readfrom_mem(self.addr, 0x06 + 4 * index, 4)
             return ustruct.unpack('<HH', data)
@@ -136,14 +234,22 @@ class SX1509:
         self._write(addr=defs.RegDEBOUNCE_ENABLE_B, val=debounceEnable)
         
 
-    def reset(self, hardware):
-        regMisc = self._read(self.defs.RegMisc)
-        if (regMisc & (1<<2)):
-            regMisc &= ~(1<<2)
-            self._write(self.defs.RegMisc, regMisc)
+    def reset(self, hard=True):        
+        if(hard):
+            regMisc = self._readWord(self.defs.RegMisc)            
+            if (regMisc & (1<<2)):
+                regMisc &= ~(1<<2)
+                self._writeWord(self.defs.RegMisc, regMisc)
+            
+            rstPin = self.defs.pinRESET
+            self.pinMode(rstPin, self.defs.OUTPUT)
+            self.digitalWrite(rstPin, self.defs.LOW)
+            utime.delay_ms(1)
+            self.digitalWrite(rstPin, self.defs.HIGH)
+        else:            
+            self._writeWord(self.defs.RegReset, 0x12)
+            self._writeWord(self.defs.RegReset, 0x34)
         
-        self._write(addr=self.defs.RegReset, val=0x12)
-        pass
 
 
     def _writePin(self, pin, highLow):
@@ -171,7 +277,7 @@ class SX1509:
 
 
     def _writeByte(self, addr, val):
-        self._i2c.writeto_mem(self._addr, addr, val.to_bytes(1, "little"))
+        self._i2c.writeto(addr, val.to_bytes(1, "little"))
 
 
     def digitalWrite(self, pin, highLow):
@@ -207,7 +313,7 @@ class SX1509:
 
 
     def _readWord(self, addr):
-        readValue = None
+        readValue = 0
         msb = 0
         lsb = 0
         self._i2c.writeto(self._addr, (0).to_bytes(1, "big"))
@@ -229,17 +335,14 @@ class SX1509:
 
     def _readPin(self, pin):
         tempRegDir = self._readWord(addr=self.defs.RegDirB)[0]
-        print("readPin:", pin ," tempRegDir=", tempRegDir)
-        retV = None
+        # print("readPin:", pin ," tempRegDir=", tempRegDir)
         
         if (tempRegDir & (1<<pin)):  # If the pin is an input
             tempRegData = self._readWord(addr=self.defs.RegDataB)[0]
             if (tempRegData & (1<<pin)):
-                retV = 1
-            else:
-                retV = 0
+                return 1
     
-        return retV
+        return 0
 
 
     def digitalRead(self, pin):
@@ -248,4 +351,3 @@ class SX1509:
 
     def analogWrite(self, pin, iOn):
         self.pwm(pin, iOn)
-        
