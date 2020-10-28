@@ -130,15 +130,6 @@ class SX1590def:
                         self._REG_T_FALL_12, self._REG_T_FALL_13, self._REG_T_FALL_14, self._REG_T_FALL_15]
 
 
-    def getRegIonAddr(self, pin):
-        addr = self.RegIOn0
-        
-        if(pin <= 4):
-            addr = self.RegIOn0 + (3 * pin) #RegIOn0 tot RegIOn4
-        elif (pin > 4):
-            pin -= 5   # begin weer bij base getal 1.
-            addr = 0x3B + (5 * pin) #RegIOn5
-
 class SX1509:
     defs = SX1590def()
     
@@ -277,7 +268,7 @@ class SX1509:
 
 
     def _writeByte(self, addr, val):
-        self._i2c.writeto(addr, val.to_bytes(1, "little"))
+        self._i2c.writeto_mem(self._addr, addr, val.to_bytes(1, "little"))
 
 
     def digitalWrite(self, pin, highLow):
@@ -351,3 +342,4 @@ class SX1509:
 
     def analogWrite(self, pin, iOn):
         self.pwm(pin, iOn)
+
