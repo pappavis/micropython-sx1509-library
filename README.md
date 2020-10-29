@@ -13,11 +13,11 @@ Current status:
   * PWM implemented, not tested.
 
 # Overzetten naar Micropython
- Stap 1. Download <a href="http://thonny.org">Thonny IDE</a>
- Stap 2. Verbind aan jouw Micropython apparaat via USB.
- Stap 3. Upload die lib middels Thonny' Save As.. feature.
- Stap 4. Verbind jouw sx1509 aan de ESP32
- Stap 5. Run de democode hieronder in Thonny.
+ Stap 1. Download <a href="http://thonny.org">Thonny IDE</a>. <br>
+ Stap 2. Verbind aan jouw Micropython apparaat via USB.<br>
+ Stap 3. Upload die lib middels Thonny' Save As.. feature.<br>
+ Stap 4. Verbind jouw sx1509 aan de ESP32<br>
+ Stap 5. Run de democode hieronder in Thonny.<br>
 
 ## Voorbeeld gebruik
 WORK-in-Progress!!
