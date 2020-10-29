@@ -30,15 +30,23 @@ import ustruct
 def main():
     global i2cAddr
     global index1
-    i2cAddr = int(0x3e)
+    i2cAddr = 0x3e
     pcfAddr = 0x23
     index1 = 1
+    i2c1 = None
     
     wemosPinsDict8266 = {"TX":1, "RX":3,"D4":2, "D3":0, "D2":4, "D1":5, "RX":3, "TX":1, "D8":15, "D7":13, "D6":12, "D5":14, "D0":16, "SCL":5, "SDA":4}
     wemosSPI8266 = {"MISO":wemosPinsDict8266["D6"], "MOSI":wemosPinsDict8266["D7"], "SCK":wemosPinsDict8266["D5"], "CSN":wemosPinsDict8266["D4"], "CE":wemosPinsDict8266["D3"]}
     
-    i2c1 = machine.I2C(scl=machine.Pin(wemosPinsDict8266["SCL"]),sda=machine.Pin(wemosPinsDict8266["SDA"]),freq=100000)
-    
+    wemosPinsESP32 = {"TX":1, "RX":3,"D4":2, "D3":0, "D2":4, "D1":5, "RX":3, "TX":1, "D8":15, "D7":13, "D6":12, "D5":14, "D0":16, "SCL0":21, "SDA0":22}
+
+
+    if(sys.platform == 'esp8266'):
+        i2c1 = machine.I2C(scl=machine.Pin(wemosPinsDict8266["SCL"]),sda=machine.Pin(wemosPinsDict8266["SDA"]),freq=100000)
+    else:
+        i2c1 = machine.SoftI2C(scl=machine.Pin(wemosPinsESP32["SCL0"]),sda=machine.Pin(wemosPinsESP32["SDA0"]),freq=100000)
+
+
     if(i2c1.scan().count(i2cAddr) == 0):
         print("I2C bord NIET gevonden op", i2cAddr)
     else:
