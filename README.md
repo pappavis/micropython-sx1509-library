@@ -6,11 +6,19 @@ This library is work-in-progress.
 <img src="https://cdn.sparkfun.com/r/500-500/assets/parts/1/0/9/5/6/13601-01.jpg" width="10%" hieght="10%">
 
 Current status:
-- 0.0.1 20201021 It can reset, can read & write a value to pin 0. Thats it!
+- 0.0.1 20201021 First release. It can reset, can read & write a value to pin 0.
 - 0.0.2 20201029
+  * Functional working.
   * Implemented <i>digitalWrite(pin, HIGH|LOW)</i>.  Note: heavily work-in-progress.
   * PWM implemented, not tested.
-  
+
+# Overzetten naar Micropython
+ Stap 1. Download <a href="http://thonny.org">Thonny IDE</a>
+ Stap 2. Verbind aan jouw Micropython apparaat via USB.
+ Stap 3. Upload die lib middels Thonny' Save As.. feature.
+ Stap 4. Verbind jouw sx1509 aan de ESP32
+ Stap 5. Run de democode hieronder in Thonny.
+
 ## Voorbeeld gebruik
 WORK-in-Progress!!
 
