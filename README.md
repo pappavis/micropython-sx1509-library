@@ -1,11 +1,13 @@
 # micropython-sx1509-library
-Micropython driver for SX1509 16-channel GPIO with LED Driver and Keypad Engine
-
-This library is work-in-progress. 
+Micropython driver for SX1509 16-channel GPIO with LED Driver and Keypad Engine. This library is work-in-progress.
 
 <img src="https://cdn.sparkfun.com/r/500-500/assets/parts/1/0/9/5/6/13601-01.jpg" width="10%" hieght="10%">
 
-# Current status:
+# IMPORTANT!!
+ * PWM & Keypad engine not working yet.
+ * Only pins 8 to 15 working as digital expander pins much like a PCF8574.
+
+# Change log:
 - 0.0.1 20201021 First release. It can reset, can read & write a value to pin 0.
 - 0.0.2 20201029
   * Functional working: <i>digitalWrite(pinNr, True|False)</i> works.
