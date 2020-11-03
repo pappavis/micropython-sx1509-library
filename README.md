@@ -33,6 +33,7 @@ WORK-in-Progress!!
 import machine
 import utime
 import ustruct
+import sx1509
 
 def main():
     global i2cAddr
