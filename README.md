@@ -13,7 +13,7 @@ Micropython driver for SX1509 16-channel GPIO with LED Driver and Keypad Engine.
   * Functional working: <i>digitalWrite(pinNr, True|False)</i> works.
 
 # Lijst van TODO
-  * TODO: test PWBM / LED breaething.
+  * TODO: test PWM / LED breaething.
   * TODO: Implementeer het Keypad engine.
 
 # HOWTO: Overzetten naar Micropython
