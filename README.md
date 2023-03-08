@@ -13,6 +13,7 @@ Comments/updates here --> <a href="https://forum.micropython.org/viewtopic.php?f
 # Change log:
 - 0.0.1 20201021 First release. It can reset, can read & write a value to pin 0.
 - 0.0.2 20201029
+- 0.0.3 20230301 Bijgewerkt met ChatGPT  https://chat.openai.com
   * Functional working: <i>digitalWrite(pinNr, True|False)</i> works.
 
 # Lijst van TODO
