@@ -1,70 +1,69 @@
-from machine import I2C, Pin
+from machine import I2C
 import time
+#20230302 Micropython gemaakt met ChatGPT.
 
-class SX1509:
-    def __init__(self, i2c, address=0x3E):
+class SX1509_LEDDriver:
+    # SX1509 LED driver class
+    def __init__(self, i2c, address):
         self.i2c = i2c
         self.address = address
-        self.reset()
         
-    def write_register(self, reg, data):
-        self.i2c.writeto_mem(self.address, reg, bytes([data]))
+        # Configure the LED driver settings
+        self.i2c.writeto_mem(self.address, 0x1E, b'\x40') # Configuration register: 0x40 = LED driver
+        self.i2c.writeto_mem(self.address, 0x20, b'\xFF') # Data direction register: 0xFF = all outputs
+        self.i2c.writeto_mem(self.address, 0x21, b'\x00') # Pull-up register: 0x00 = all disabled
         
-    def read_register(self, reg):
-        return self.i2c.readfrom_mem(self.address, reg, 1)[0]
-
-    def reset(self):
-        self.write_register(0x7D, 0x12)
-        time.sleep_ms(10)
-        self.write_register(0x7D, 0x34)
-        time.sleep_ms(10)
-        self.write_register(0x7D, 0x40)
-        time.sleep_ms(10)
-    
-    def set_pin_direction(self, pin, direction):
-        mask = 1 << pin
-        if direction == "output":
-            self.write_register(0x0C, self.read_register(0x0C) & ~mask)
-        else:
-            self.write_register(0x0C, self.read_register(0x0C) | mask)
+    def set_pwm(self, pin, value):
+        # Set PWM duty cycle for the specified pin (0-255)
+        if value < 0:
+            value = 0
+        elif value > 255:
+            value = 255
+        self.i2c.writeto_mem(self.address, 0x12 + pin, bytes([value]))
         
-    def set_pin_pullup(self, pin, pullup):
-        mask = 1 << pin
-        if pullup:
-            self.write_register(0x06, self.read_register(0x06) | mask)
-        else:
-            self.write_register(0x06, self.read_register(0x06) & ~mask)
-            
-    def set_pin_pulldown(self, pin, pulldown):
-        mask = 1 << pin
-        if pulldown:
-            self.write_register(0x06, self.read_register(0x06) | mask)
-        else:
-            self.write_register(0x06, self.read_register(0x06) & ~mask)
+    def blink(self, pin, on_time, off_time):
+        # Blink the specified pin on and off
+        self.i2c.writeto_mem(self.address, 0x11, bytes([1 << pin])) # Enable blink for pin
+        self.i2c.writeto_mem(self.address, 0x13 + (2 * pin), bytes([on_time])) # On time
+        self.i2c.writeto_mem(self.address, 0x14 + (2 * pin), bytes([off_time])) # Off time
+        
+    def breathe(self, pin, fade_in_time, fade_out_time):
+        # Make the specified pin fade in and out
+        self.i2c.writeto_mem(self.address, 0x11, bytes([1 << pin])) # Enable blink for pin
+        self.i2c.writeto_mem(self.address, 0x1D, bytes([1 << pin])) # Enable PWM for pin
+        self.i2c.writeto_mem(self.address, 0x19 + (2 * pin), bytes([fade_in_time])) # Fade in time
+        self.i2c.writeto_mem(self.address, 0x1A + (2 * pin), bytes([fade_out_time])) # Fade out time
 
-    def set_pin_state(self, pin, state):
-        mask = 1 << pin
-        if state:
-            self.write_register(0x10, self.read_register(0x10) | mask)
-        else:
-            self.write_register(0x10, self.read_register(0x10) & ~mask)
-            
-    def set_pin_pwm(self, pin, pwm):
-        self.write_register(0x12 + pin * 2, pwm & 0xFF)
-        self.write_register(0x13 + pin * 2, (pwm >> 8) & 0xFF)
 
-    def set_led_blink(self, pin, time_on, time_off, rise_time, fall_time):
-        mask = 1 << pin
-        self.write_register(0x08, self.read_register(0x08) | mask)
-        self.write_register(0x2D + pin, time_on)
-        self.write_register(0x25 + pin, time_off)
-        self.write_register(0x1D + pin, rise_time)
-        self.write_register(0x21 + pin, fall_time)
-    
-    def set_keypad(self, rows, cols):
-        self.write_register(0x22, rows)
-        self.write_register(0x23, cols)
-    
-    def read_keypad(self):
-        data = self.i2c.readfrom_mem(self.address, 0x03, 2)
-        return (data[1] << 8) | data[0]
+from machine import I2C
+
+class SX1509_Keypad:
+    # Class for reading input from a 4x4 keypad connected to the SX1509 IC
+    def __init__(self, i2c, address):
+        self.i2c = i2c
+        self.address = address
+        self.row_pins = [0, 1, 2, 3] # The row pins on the keypad
+        self.col_pins = [4, 5, 6, 7] # The column pins on the keypad
+        self.keymap = [
+            ['1', '2', '3', 'A'],
+            ['4', '5', '6', 'B'],
+            ['7', '8', '9', 'C'],
+            ['*', '0', '#', 'D']
+        ] # The keymap for the keypad
+        
+        # Configure the SX1509 settings for the keypad
+        self.i2c.writeto_mem(self.address, 0x1E, b'\x20') # Configuration register: 0x20 = keypad
+        self.i2c.writeto_mem(self.address, 0x20, bytes([0b11110000])) # Data direction register: Rows are inputs, Columns are outputs
+        self.i2c.writeto_mem(self.address, 0x21, bytes([0b00001111])) # Pull-up register: Rows are pulled up
+        
+    def scan(self):
+        # Scan the keypad for input
+        for i, col_pin in enumerate(self.col_pins):
+            self.i2c.writeto_mem(self.address, 0x10, bytes([1 << col_pin])) # Set column pin high
+            for j, row_pin in enumerate(self.row_pins):
+                val = self.i2c.readfrom_mem(self.address, 0x0A + row_pin, 1)[0]
+                if not val & (1 << row_pin):
+                    return self.keymap[j][i] # Return the pressed key
+            self.i2c.writeto_mem(self.address, 0x10, bytes([0])) # Set column pin low
+        return None # No key pressed
+
